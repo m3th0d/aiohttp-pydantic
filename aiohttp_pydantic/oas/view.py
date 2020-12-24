@@ -130,9 +130,13 @@ def _add_http_method_to_oas(
             if name in defaults:
                 attrs["__root__"] = defaults[name]
 
-            oas_operation.parameters[i].schema = type(name, (BaseModel,), attrs).schema(
+            param_schema = type(name, (BaseModel,), attrs).schema(
                 ref_template="#/components/schemas/{model}"
             )
+            oas_operation.parameters[i].schema = param_schema
+
+            if def_sub_schemas := param_schema.pop("definitions", None):
+                oas.components.schemas.update(def_sub_schemas)
 
             oas_operation.parameters[i].required = optional_type is None
 
