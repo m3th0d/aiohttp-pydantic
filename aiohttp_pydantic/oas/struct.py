@@ -130,6 +130,36 @@ class Parameters:
         return Parameter(spec)
 
 
+class Header:
+    def __init__(self, spec: dict, name: str):
+        self._spec = spec.setdefault(name, {})
+        self._schema = self._spec.setdefault("schema", {})
+
+    @property
+    def type_(self) -> str:
+        return self._schema["type"]
+
+    @type_.setter
+    def type_(self, type_: str):
+        self._schema["type"] = type_
+
+    @property
+    def example(self) -> str:
+        return self._schema["example"]
+
+    @example.setter
+    def example(self, example: str):
+        self._schema["example"] = example
+
+
+class Headers:
+    def __init__(self, spec: dict):
+        self._spec = spec.setdefault("headers", {})
+
+    def __getitem__(self, name: str) -> Header:
+        return Header(self._spec, name)
+
+
 class Response:
     def __init__(self, spec: dict):
         self._spec = spec
@@ -150,6 +180,10 @@ class Response:
     @content.setter
     def content(self, content: dict):
         self._spec["content"] = content
+
+    @property
+    def headers(self) -> Headers:
+        return Headers(self._spec)
 
 
 class Responses:

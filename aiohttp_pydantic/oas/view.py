@@ -37,10 +37,11 @@ class _OASResponseBuilder:
     generate the OAS operation response.
     """
 
-    def __init__(self, oas: OpenApiSpec3, oas_operation, status_code_descriptions):
+    def __init__(self, oas: OpenApiSpec3, oas_operation, status_code_descriptions, auth_provider_cfg):
         self._oas_operation = oas_operation
         self._oas = oas
         self._status_code_descriptions = status_code_descriptions
+        self._auth_provider_cfg = auth_provider_cfg
 
     def _handle_pydantic_base_model(self, obj):
         if is_pydantic_base_model(obj):
@@ -59,6 +60,7 @@ class _OASResponseBuilder:
         return self._handle_pydantic_base_model(obj)
 
     def _handle_status_code_type(self, obj):
+        status_code = None
         if is_status_code_type(typing.get_origin(obj)):
             status_code = typing.get_origin(obj).__name__[1:]
             self._oas_operation.responses[status_code].content = {
@@ -76,6 +78,11 @@ class _OASResponseBuilder:
             desc = self._status_code_descriptions.get(int(status_code))
             if desc:
                 self._oas_operation.responses[status_code].description = desc
+
+        if self._auth_provider_cfg and str(self._auth_provider_cfg.status_code) == status_code:
+            cookie_header = self._oas_operation.responses[status_code].headers['Set-Cookie']
+            cookie_header.type_ = 'string'
+            cookie_header.example = self._auth_provider_cfg.cookie_example
 
     def _handle_union(self, obj):
         if typing.get_origin(obj) is typing.Union:
@@ -173,9 +180,10 @@ def _add_http_method_to_oas(
 
             oas_operation.parameters[i].required = optional_type is None
 
+    auth_provider_cfg = getattr(handler, '__auth_provider__', None)
     return_type = handler.__annotations__.get("return")
     if return_type is not None:
-        _OASResponseBuilder(oas, oas_operation, status_code_descriptions).build(
+        _OASResponseBuilder(oas, oas_operation, status_code_descriptions, auth_provider_cfg).build(
             return_type
         )
 
