@@ -164,6 +164,25 @@ class Responses:
         return Response(spec)
 
 
+class SecurityItem:
+    def __init__(self, spec: list):
+        self._spec = spec
+
+
+class Security:
+    def __init__(self, spec: dict):
+        self._spec = spec.setdefault("security", [])
+
+    def __getitem__(self, item: str) -> SecurityItem:
+        existing = [x for x in self._spec if next(iter(x)) == item]
+        if existing:
+            item_spec = next(iter(existing[0].values()))
+        else:
+            item_spec = []
+            self._spec.append({item: item_spec})
+        return SecurityItem(item_spec)
+
+
 class OperationObject:
     def __init__(self, spec: dict):
         self._spec = spec
@@ -195,6 +214,10 @@ class OperationObject:
     @property
     def responses(self) -> Responses:
         return Responses(self._spec)
+
+    @property
+    def security(self) -> Security:
+        return Security(self._spec)
 
 
 class PathItem:
@@ -301,6 +324,10 @@ class Components:
     @property
     def schemas(self) -> dict:
         return self._spec.setdefault("schemas", {})
+
+    @property
+    def security_schemes(self) -> dict:
+        return self._spec.setdefault("securitySchemes", {})
 
 
 class OpenApiSpec3:

@@ -87,6 +87,35 @@ class _OASResponseBuilder:
         self._handle_union(obj)
 
 
+def _set_security_schemes(oas: OpenApiSpec3, cookie_name: str):
+    css = oas.components.security_schemes
+
+    if 'bearerAuth' not in css:
+        css['bearerAuth'] = {
+            'type': 'http',
+            'scheme': 'bearer',
+            'bearerFormat': 'JWT',
+        }
+
+    if 'cookieAuth' not in css:
+        css['cookieAuth'] = {
+            'type': 'apiKey',
+            'in': 'cookie',
+            'name': cookie_name,
+        }
+
+
+def _add_auth(oas: OpenApiSpec3, oas_operation: OperationObject, auth_cfg):
+    if not auth_cfg.is_enabled:
+        return
+
+    cookie_name = auth_cfg.access_cookie_name
+    _set_security_schemes(oas, cookie_name)
+
+    oas_operation.security['bearerAuth']
+    oas_operation.security['cookieAuth']
+
+
 def _add_http_method_to_oas(
     oas: OpenApiSpec3, oas_path: PathItem, http_method: str, view: Type[PydanticView]
 ):
@@ -102,6 +131,10 @@ def _add_http_method_to_oas(
         status_code_descriptions = docstring_parser.status_code(description)
     else:
         status_code_descriptions = {}
+
+    auth_cfg = getattr(handler, '__auth__', None)
+    if auth_cfg:
+        _add_auth(oas, oas_operation, auth_cfg)
 
     if body_args:
         body_schema = next(iter(body_args.values())).schema(
