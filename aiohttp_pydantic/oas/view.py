@@ -31,9 +31,20 @@ def _handle_optional(type_):
     return None
 
 
+SCHEMA_REF_TEMPLATE = "#/components/schemas/{model}"
+
+
 def _get_pydantic_schema(model) -> dict:
-    schema = model.schema(ref_template="#/components/schemas/{model}")
+    schema = model.schema(ref_template=SCHEMA_REF_TEMPLATE)
     return dict(schema)  # Create a copy to avoid cached schema mutations
+
+
+def _make_ref(model_name: str) -> str:
+    return SCHEMA_REF_TEMPLATE.format(model=model_name)
+
+
+def _make_ref_items(model_name: str) -> dict:
+    return {'$ref': _make_ref(model_name)}
 
 
 class _OASResponseBuilder:
@@ -53,7 +64,10 @@ class _OASResponseBuilder:
             response_schema = _get_pydantic_schema(obj)
             if def_sub_schemas := response_schema.pop("definitions", None):
                 self._oas.components.schemas.update(def_sub_schemas)
-            return response_schema
+
+            model_name = response_schema['title']
+            self._oas.components.schemas.update({model_name: response_schema})
+            return _make_ref_items(model_name)
         return {}
 
     def _handle_list(self, obj):
