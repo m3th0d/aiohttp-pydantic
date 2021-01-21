@@ -31,6 +31,11 @@ def _handle_optional(type_):
     return None
 
 
+def _get_pydantic_schema(model) -> dict:
+    schema = model.schema(ref_template="#/components/schemas/{model}")
+    return dict(schema)  # Create a copy to avoid cached schema mutations
+
+
 class _OASResponseBuilder:
     """
     Parse the type annotated as returned by a function and
@@ -45,7 +50,7 @@ class _OASResponseBuilder:
 
     def _handle_pydantic_base_model(self, obj):
         if is_pydantic_base_model(obj):
-            response_schema = obj.schema(ref_template="#/components/schemas/{model}")
+            response_schema = _get_pydantic_schema(obj)
             if def_sub_schemas := response_schema.pop("definitions", None):
                 self._oas.components.schemas.update(def_sub_schemas)
             return response_schema
@@ -144,9 +149,8 @@ def _add_http_method_to_oas(
         _add_auth(oas, oas_operation, auth_cfg)
 
     if body_args:
-        body_schema = next(iter(body_args.values())).schema(
-            ref_template="#/components/schemas/{model}"
-        )
+        body_model = next(iter(body_args.values()))
+        body_schema = _get_pydantic_schema(body_model)
         if def_sub_schemas := body_schema.pop("definitions", None):
             oas.components.schemas.update(def_sub_schemas)
 
@@ -170,9 +174,8 @@ def _add_http_method_to_oas(
             if name in defaults:
                 attrs["__root__"] = defaults[name]
 
-            param_schema = type(name, (BaseModel,), attrs).schema(
-                ref_template="#/components/schemas/{model}"
-            )
+            param_model = type(name, (BaseModel,), attrs)
+            param_schema = _get_pydantic_schema(param_model)
             oas_operation.parameters[i].schema = param_schema
 
             if def_sub_schemas := param_schema.pop("definitions", None):
