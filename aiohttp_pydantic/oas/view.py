@@ -144,6 +144,11 @@ def _add_http_method_to_oas(
     else:
         status_code_descriptions = {}
 
+    swagger_cfg = getattr(handler, '__swagger__', None)
+    if swagger_cfg:
+        oas_operation.tags = swagger_cfg.tags
+        oas_operation.operation_id = swagger_cfg.operation
+
     auth_cfg = getattr(handler, '__auth__', None)
     if auth_cfg:
         _add_auth(oas, oas_operation, auth_cfg)

@@ -2,7 +2,7 @@
 Utility to write Open Api Specifications using the Python language.
 """
 
-from typing import Union
+from typing import List, Union
 
 
 class Info:
@@ -236,6 +236,22 @@ class OperationObject:
     @description.setter
     def description(self, description: str):
         self._spec["description"] = description
+
+    @property
+    def tags(self) -> List[str]:
+        return self._spec["tags"]
+
+    @tags.setter
+    def tags(self, tags: List[str]):
+        self._spec["tags"] = tags
+
+    @property
+    def operation_id(self) -> str:
+        return self._spec["operationId"]
+
+    @operation_id.setter
+    def operation_id(self, operation_id: str):
+        self._spec["operationId"] = operation_id
 
     @property
     def request_body(self) -> RequestBody:
