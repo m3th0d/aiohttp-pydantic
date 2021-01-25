@@ -146,6 +146,9 @@ def _add_http_method_to_oas(
     oas: OpenApiSpec3, oas_path: PathItem, http_method: str, view: Type[PydanticView]
 ):
     http_method = http_method.lower()
+    if http_method == 'options':
+        return
+
     oas_operation: OperationObject = getattr(oas_path, http_method)
     handler = getattr(view, http_method)
     path_args, body_args, qs_args, header_args, defaults = _parse_func_signature(
