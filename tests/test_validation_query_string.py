@@ -22,7 +22,7 @@ async def test_get_article_without_required_qs_should_return_an_error_message(
 
     client = await aiohttp_client(app)
     resp = await client.get("/article")
-    assert resp.status == 400
+    assert resp.status == 418
     assert resp.content_type == "application/json"
     assert await resp.json() == [
         {
@@ -42,7 +42,7 @@ async def test_get_article_with_wrong_qs_type_should_return_an_error_message(
 
     client = await aiohttp_client(app)
     resp = await client.get("/article", params={"with_comments": "foo"})
-    assert resp.status == 400
+    assert resp.status == 418
     assert resp.content_type == "application/json"
     assert await resp.json() == [
         {

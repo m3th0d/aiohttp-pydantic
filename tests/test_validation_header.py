@@ -40,7 +40,7 @@ async def test_get_article_without_required_header_should_return_an_error_messag
 
     client = await aiohttp_client(app)
     resp = await client.get("/article", headers={})
-    assert resp.status == 400
+    assert resp.status == 418
     assert resp.content_type == "application/json"
     assert await resp.json() == [
         {
@@ -60,7 +60,7 @@ async def test_get_article_with_wrong_header_type_should_return_an_error_message
 
     client = await aiohttp_client(app)
     resp = await client.get("/article", headers={"signature_expired": "foo"})
-    assert resp.status == 400
+    assert resp.status == 418
     assert resp.content_type == "application/json"
     assert await resp.json() == [
         {
@@ -121,7 +121,7 @@ async def test_wrong_value_to_header_defined_with_str_enum(aiohttp_client, loop)
         ]
         != {"signature": "2020-10-04T18:01:00"}
     )
-    assert resp.status == 400
+    assert resp.status == 418
     assert resp.content_type == "application/json"
 
 

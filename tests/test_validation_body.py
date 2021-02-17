@@ -24,7 +24,7 @@ async def test_post_an_article_without_required_field_should_return_an_error_mes
 
     client = await aiohttp_client(app)
     resp = await client.post("/article", json={})
-    assert resp.status == 400
+    assert resp.status == 418
     assert resp.content_type == "application/json"
     assert await resp.json() == [
         {
@@ -44,7 +44,7 @@ async def test_post_an_article_with_wrong_type_field_should_return_an_error_mess
 
     client = await aiohttp_client(app)
     resp = await client.post("/article", json={"name": "foo", "nb_page": "foo"})
-    assert resp.status == 400
+    assert resp.status == 418
     assert resp.content_type == "application/json"
     assert await resp.json() == [
         {

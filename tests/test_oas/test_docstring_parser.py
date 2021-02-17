@@ -26,7 +26,7 @@ def web_handler():
 
         301: line B 1
           line B 2
-        400: line C 1
+        418: line C 1
 
              line C 2
 
@@ -55,7 +55,7 @@ def test_status_code():
         200: "line 1\n\nline 2:\n  - line 3\n  - line 4\n\nline 5",
         300: "line A 1",
         301: "line B 1\nline B 2",
-        400: "line C 1\n\nline C 2\n\n  line C 3",
+        418: "line C 1\n\nline C 2\n\n  line C 3",
     }
 
     assert status_code(getdoc(web_handler)) == expected

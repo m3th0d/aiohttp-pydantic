@@ -96,7 +96,7 @@ def inject_params(
                 for error in errors:
                     error["in"] = injector.context
 
-                return json_response(data=errors, status=400)
+                return json_response(data=errors, status=418)
 
         return await handler(self, *args, **kwargs)
 
