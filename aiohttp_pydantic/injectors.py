@@ -87,7 +87,7 @@ class QueryGetter(AbstractInjector):
 
     def inject(self, request: BaseRequest, args_view: list, kwargs_view: dict):
         unique_query = {q: ','.join(request.query.getall(q)) for q in request.query}
-        kwargs_view.update(self.model(**unique_query).dict())
+        kwargs_view.update(dict(self.model(**unique_query)))
 
 
 class HeadersGetter(AbstractInjector):
